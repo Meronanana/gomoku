@@ -1,13 +1,11 @@
-import pygame
+import pygame as pg
 
 from gomoku import Gomoku
-from gomoku.palette import COLOR_BLACK, COLOR_RED, COLOR_GRAY, \
-    COLOR_GREEN, COLOR_WHITE
-
+from gomoku.colors import *
 
 if __name__ == "__main__":
-    pygame.init()
-    pygame.font.init()
+    pg.init()
+    pg.font.init()
 
     stone = {}
     stone["white"], stone["black"] = [], []
@@ -19,8 +17,8 @@ if __name__ == "__main__":
     play_order = None
 
     while True:
-        event = pygame.event.poll()
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        event = pg.event.poll()
+        if event.type == pg.MOUSEBUTTONDOWN:
 
             x_stone, y_stone = game.play_get_pos()
 
@@ -88,4 +86,4 @@ if __name__ == "__main__":
                                        (200, 0, 0), 45)
                         play_order = None
         game.interactive_button()
-        pygame.display.update()
+        pg.display.update()
