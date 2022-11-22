@@ -6,7 +6,7 @@ from gomoku.colors import *
 if __name__ == "__main__":
     pg.init()
     pg.font.init()
-
+    
     stone = {}
     stone["white"], stone["black"] = [], []
     player1_score, player2_score = 0, 0

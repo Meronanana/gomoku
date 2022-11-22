@@ -1,5 +1,5 @@
 import pygame as pg
-from colors import *
+from .colors import *
 
 class Gomoku:
     def __init__(self):
