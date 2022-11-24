@@ -9,6 +9,7 @@ class Gomoku:
         pg.display.set_caption(self.title)
         self.screen.fill(COLOR_BOARD)
 
+    # 오목판 그림.
     def draw_main(self, x=45*16, y=45, w=125, h=45,
                   button_color=COLOR_BUTTON, ac_button_color=COLOR_AC_BUTTON):
 
@@ -20,6 +21,7 @@ class Gomoku:
                              [45, 45 * i], [self.w_h, 45 * i], 2)
         pg.draw.circle(self.screen, COLOR_BLACK, [45 * 8, 45 * 8], 8)
 
+    # 점수 부분을 그림.
     def draw_score(self, player1_score, player2_score):
         self.player1_score, self.player2_score = player1_score, player2_score
         # Score.
@@ -36,6 +38,7 @@ class Gomoku:
         self.text_draw(str(self.player2_score), 45 * 16 + 65,
                        self.w_h // 2 + 80, COLOR_BLACK, 45)
 
+    # ?????
     def interactive_button(self, x=45*16, y=45, w=125, h=45,
                            button_color=COLOR_BUTTON,
                            ac_button_color=COLOR_AC_BUTTON):
@@ -77,6 +80,7 @@ class Gomoku:
                 pg.quit()
                 quit()
 
+    # ???????
     def text_draw(self, text, x_pos, y_pos, font_color, font_size):
         self.text = text
         self.font_size = font_size
@@ -90,11 +94,13 @@ class Gomoku:
         textSurface = font.render(text, True, font_color)
         return textSurface, textSurface.get_rect()
 
+    # 마우스 좌표 구함.
     def play_get_pos(self):
         self.x_stone, self.y_stone = pg.mouse.get_pos()
 
         return self.x_stone, self.y_stone
 
+    # 돌을 그릴 기준 좌표를 구함.
     def play_draw_stone_pos(self):
         if self.x_stone % 45 > 23:
             self.x_stone = (self.x_stone - self.x_stone % 45) + 45
@@ -108,6 +114,7 @@ class Gomoku:
 
         return self.x_stone, self.y_stone
 
+    # 색깔에 맞는 돌을 그림.
     def play_draw_stone(self, stone, play_order, color_name, stone_color, x_stone, y_stone):
         self.stone, self.play_order, self.color_name = stone, play_order, color_name
         self.stone_color, self.x_stone, self.y_stone = stone_color, x_stone, y_stone
@@ -124,6 +131,7 @@ class Gomoku:
             else: self.play_order = True
         return self.stone, self.play_order
 
+    # 실제 승리 여부를 가르는 알고리즘.
     def score(self, stone, color_name, player_score, play_order):
         self.stone, self.color_name, self.player_score = stone, color_name, player_score
         self.play_order = play_order
