@@ -26,7 +26,7 @@ if __name__ == "__main__":
             # New game 버튼 누름. 모든 게임 초기화.
             if (125 + 45 * 16) > x_stone > 45 * 16 and 90 > y_stone > 45:
                 stone["white"], stone["black"] = [], []
-                player1_score, player2_score = 0, 0
+                player1_score, player2_score = 0, 0 # 요고 유무 차이
                 game = Gomoku()
                 game.draw_main()
                 game.draw_score(player1_score, player2_score)

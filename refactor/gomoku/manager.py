@@ -1,7 +1,7 @@
 import pygame as pg
 from .colors import *
 
-class Gomoku:
+class GameManager:
     def __init__(self):
         self.w_h = 675
         self.title = "GOMOKU for 2 players"
@@ -15,11 +15,9 @@ class Gomoku:
 
         # Gomoku board.
         for i in range(1, 16):
-            pg.draw.line(self.screen, COLOR_BLACK,
-                             [45 * i, 45], [45 * i, self.w_h], 2)
-            pg.draw.line(self.screen, COLOR_BLACK,
-                             [45, 45 * i], [self.w_h, 45 * i], 2)
-        pg.draw.circle(self.screen, COLOR_BLACK, [45 * 8, 45 * 8], 8)
+            pg.draw.line(self.screen, COLOR_BLACK, (45 * i, 45), (45 * i, self.w_h), 2)
+            pg.draw.line(self.screen, COLOR_BLACK, (45, 45 * i), (self.w_h, 45 * i), 2)
+        pg.draw.circle(self.screen, COLOR_BLACK, (45 * 8, 45 * 8), 8)
 
     # 점수 부분을 그림.
     def draw_score(self, player1_score, player2_score):
