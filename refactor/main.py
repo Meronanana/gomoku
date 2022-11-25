@@ -1,7 +1,7 @@
 import pygame as pg
 
 from gomoku.board import GomokuBoard
-from gomoku.manager import GameManager
+from gomoku.manager import MatchManager
 from gomoku.colors import *
 
 if __name__ == "__main__":
@@ -9,7 +9,10 @@ if __name__ == "__main__":
     pg.font.init()
     
     # 게임을 초기화 합니다.
-    game = GomokuBoard(False)
+    game = GomokuBoard(None)
+    manager = None
+    size, k = GomokuBoard.size, GomokuBoard.interval
+    x, y, w, h = k*16, k*2, 125, k
 
     while True:
         event = pg.event.poll()     # 행동을 하나 빼낸다.
@@ -19,26 +22,25 @@ if __name__ == "__main__":
             game.quit_pressed(x_pos, y_pos)
 
             # New game 버튼 누름. 모든 게임 초기화.
-            if 45*16 < x_pos < 45*16 + 125 and 45 < y_pos < 90:
-                GomokuBoard.p1_score, GomokuBoard.p2_score = 0, 0 # 요고 유무 차이
-                game = GomokuBoard(True)
+            if x < x_pos < w + x and y < y_pos < y + h:
+                manager = MatchManager()
+                game = GomokuBoard(manager)
 
             # Next game 버튼 누름. 스코어 제외 초기화.
-            if 45*16 < x_pos < 45*16 + 125 and 115 < y_pos < 160:
-                game = GomokuBoard(True)
+            if x < x_pos < w + x and y + 70 < y_pos < y + 70 + h:
+                if manager == None:
+                    manager = MatchManager()
+                else:
+                    manager.new_game()
+                game = GomokuBoard(manager)
 
-
-            # 게임 중이 아니면 그냥 넘어간다.
-            if game.play_order is None:  # play_order가 False이면 흰색 차례. True이면 검은 색 차례.
-                pass
-
-            # 흰색 돌을 표시. (Player 1).
-            elif not game.play_order:
-                if 45 <= x_pos <= 45 + GomokuBoard.size and 45 <= y_pos <= 45 + GomokuBoard.size:
-                    game.draw_stone("white", COLOR_WHITE, x_pos, y_pos)   # 흰돌을 그린다.
-            # 검은색 돌을 표시. (Player 2).
-            elif game.play_order:
-                if 45 <= x_pos <= 45 + GomokuBoard.size and 45 <= y_pos <= 45 + GomokuBoard.size:
+            # play_order가 False이면 흰색 차례. True이면 검은 색 차례.
+            if k-20 <= x_pos <= k+20 + size and k*2-20 <= y_pos <= k*2+20 + size:
+                if manager.play_order is None: # 게임 중이 아니면 그냥 넘어간다.
+                    pass
+                elif not manager.play_order:   # 흰색 돌을 표시. (Player 1).
+                    game.draw_stone("white", COLOR_WHITE, x_pos, y_pos)
+                elif manager.play_order:   # 검은색 돌을 표시. (Player 2).
                     game.draw_stone("black", COLOR_BLACK, x_pos, y_pos)
         
         if event.type == pg.MOUSEMOTION:    # 마우스를 위로 올렸을 때 행동
