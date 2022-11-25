@@ -4,18 +4,30 @@ from .colors import *
 class GomokuBoard:
     size = 675
     interval = 45
-    def __init__(self):
+    p1_score = 0
+    p2_score = 0
+
+    def __init__(self, onGame):
         self.title = "GOMOKU for 2 players"
         self.screen = pg.display.set_mode((900, GomokuBoard.size + 45))
         pg.display.set_caption(self.title)
         self.screen.fill(COLOR_BOARD)
-        self.p1_score = 0
-        self.p2_score = 0
+
+        self.draw_board()
+        self.draw_score()
+        if not onGame:
+            self.play_order = None
+        elif onGame:
+            self.stones = {}
+            self.stones["white"], self.stones["black"] = [], []
+            self.draw_text("NEXT GAME START", GomokuBoard.size//2, 30, COLOR_GREEN, 35)
+            self.draw_text("PLAYER 1", 45 * 16 + 65, GomokuBoard.size // 2 - 90, COLOR_GRAY, 20)
+            self.draw_text("PLAYER 2", 45 * 16 + 65, GomokuBoard.size // 2 + 20, COLOR_RED, 20)
+            self.play_order = True
 
     # 오목판 그림.
     def draw_board(self, x=45, y=45):
         size = GomokuBoard.size
-
         for i in range(16):
             pg.draw.line(self.screen, COLOR_BLACK, (x + 45*i, y), (x + 45*i, size), 2)
             pg.draw.line(self.screen, COLOR_BLACK, (45, y + 45*i), (x + size, y + 45*i), 2)
@@ -28,13 +40,16 @@ class GomokuBoard:
         # 백돌 점수.
         self.draw_text("PLAYER 1", interval * 16 + 65, size // 2 - 90, (100, 100, 100), 20)
         pg.draw.circle(self.screen, COLOR_WHITE, (interval * 16 + 5, GomokuBoard.size // 2 - 90), interval // 5)
-        self.draw_text(str(self.p1_score), interval * 16 + 65, size // 2 - 30, (100, 100, 100), interval)
+        pg.draw.rect(self.screen, COLOR_BOARD, (interval * 16 + 30, GomokuBoard.size // 2 - 70, 50, 60))
+        self.draw_text(str(GomokuBoard.p1_score), interval * 16 + 65, size // 2 - 30, (100, 100, 100), interval)
 
         # 흑돌 점수.
         self.draw_text("PLAYER 2", 45 * 16 + 65, size // 2 + 20, COLOR_BLACK, 20)
         pg.draw.circle(self.screen, COLOR_BLACK, (interval * 16 + 5, size // 2 + 20), interval//5)
-        self.draw_text(str(self.p2_score), 45 * 16 + 65, size // 2 + 80, COLOR_BLACK, interval)
+        pg.draw.rect(self.screen, COLOR_BOARD, (interval * 16 + 30, GomokuBoard.size // 2 + 40, 50, 60))
+        self.draw_text(str(GomokuBoard.p2_score), 45 * 16 + 65, size // 2 + 80, COLOR_BLACK, interval)
 
+    # Quit 버튼 눌렀을 때 종료처리
     def quit_pressed(self, x_pos, y_pos):
         x, y, w, h, size = GomokuBoard.interval*16, GomokuBoard.interval, 125, GomokuBoard.interval, GomokuBoard.size
         
@@ -77,7 +92,7 @@ class GomokuBoard:
             self.draw_text("NEXT GAME", x + 62, y + 95, (0, 0, 180), 20)
             self.draw_text("QUIT", x + 56, size - 65, (200, 0, 200), 20)
 
-    # ???????
+    # 텍스트 띄우는 내장함수
     def draw_text(self, text, x_pos, y_pos, font_color, font_size):
         ff = pg.font.Font(pg.font.get_default_font(), font_size)
         TextSurf, TextRect = self.text_objects(text, ff, font_color)
@@ -104,24 +119,34 @@ class GomokuBoard:
         return x_pos, y_pos
 
     # 색깔에 맞는 돌을 그림.
-    def play_draw_stone(self, stone, play_order, color_name, stone_color, x_pos, y_pos):
+    def draw_stone(self, player_name, stone_color, x_pos, y_pos):
+        x_pos, y_pos = GomokuBoard.get_stone_pos(x_pos, y_pos)
+        stone = self.stones
 
-        if (x_pos, y_pos) in stone["white"]:
-            pass
-        elif (x_pos, y_pos) in stone["black"]:
+        # 좌표가 이미 돌이 있는 곳이면 아무 작업도 하지 않음.
+        if (x_pos, y_pos) in stone["white"] or (x_pos, y_pos) in stone["black"]:
             pass
         else:
-            pg.draw.circle(self.screen, stone_color,
-                               (x_pos, y_pos), 45//2)
-            stone[color_name].append((x_pos, y_pos))
-            if play_order:
-                play_order = False
-            else:
-                play_order = True
-        return stone, play_order
+            pg.draw.circle(self.screen, stone_color, (x_pos, y_pos), 45//2)
+            stone[player_name].append((x_pos, y_pos))
+
+            self.play_order = not self.play_order
+            if self.play_order:
+                self.draw_text("PLAYER 1", 45 * 16 + 65, GomokuBoard.size // 2 - 90, COLOR_GRAY, 20)
+                self.draw_text("PLAYER 2", 45 * 16 + 65, GomokuBoard.size // 2 + 20, COLOR_RED, 20)   # 누구 차례인지를 표시.
+                self.score("white")  # 이겼는지 판단.
+            elif not self.play_order:
+                self.draw_text("PLAYER 1", 45 * 16 + 65, GomokuBoard.size // 2 - 90, COLOR_RED, 20)
+                self.draw_text("PLAYER 2", 45 * 16 + 65, GomokuBoard.size // 2 + 20, COLOR_BLACK, 20)
+                self.score("black")  # 이겼는지 판단.
+
+            if len(stone["white"]) + len(stone["black"]) == 225:    # 무승부 판단.
+                self.draw_text("DRAW", 45 * 16 + 65, GomokuBoard.size // 2 + 120, (200, 0, 0), 45)
+                self.play_order = None
 
     # 실제 승리 여부를 가르는 알고리즘.
-    def score(self, stone, color_name, play_order):
+    def score(self, color_name):
+        stone = self.stones
         result = None
         if len(stone[color_name]) >= 5:
             stone_sort = sorted(stone[color_name])
@@ -131,7 +156,7 @@ class GomokuBoard:
                     if (x, y + 45 * i) in stone_sort:
                         cnt += 1
                         if cnt == 4:
-                            play_order = None
+                            self.play_order = None
                             result = True
                             break
 
@@ -142,7 +167,7 @@ class GomokuBoard:
                     if (x + 45 * i, y) in stone_sort:
                         cnt += 1
                         if cnt == 4:
-                            play_order = None
+                            self.play_order = None
                             result = True
                             break
                     else: break
@@ -152,7 +177,7 @@ class GomokuBoard:
                     if (x + 45 * i, y+45 * i) in stone_sort:
                         cnt += 1
                         if cnt == 4:
-                            play_order = None
+                            self.play_order = None
                             result = True
                             break
                 cnt = 0
@@ -160,7 +185,7 @@ class GomokuBoard:
                     if (x + 45 * i, y - 45 * i) in stone_sort:
                         cnt += 1
                         if cnt == 4:
-                            play_order = None
+                            self.play_order = None
                             result = True
                             break
 
@@ -168,11 +193,11 @@ class GomokuBoard:
             if color_name == "white":
                 self.draw_text("WIN", 45 * 16 + 65, GomokuBoard.size // 2 - 120,
                                (100, 100, 100), 45)
-                self.p1_score += 1
+                GomokuBoard.p1_score += 1
 
             elif color_name == "black":
                 self.draw_text("WIN", 45 * 16 + 65, GomokuBoard.size//2 + 120,
                                COLOR_BLACK, 45)
-                self.p2_score += 1
+                GomokuBoard.p2_score += 1
 
-        return play_order
+            self.draw_score()
